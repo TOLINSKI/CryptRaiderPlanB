@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "DrawDebugHelpers.h"
 #include "Engine/World.h"
 #include "Grabber.h"
 
@@ -29,7 +30,10 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// FRotator CameraRotation = Super::GetComponentRotation();
+	/*
+
+	Some Useful World stuff:
+	========================
 
 	FRotator CameraRotation = GetComponentRotation();
 	FString CameraRotationCoordinates = CameraRotation.ToCompactString();
@@ -42,6 +46,13 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 	float TimeSeconds = World->GetTimeSeconds();
 
 	UE_LOG(LogTemp, Display, TEXT("Time Seconds: %f"), TimeSeconds);
+
+	*/
+
+	FVector Start = GetComponentLocation();
+	FVector End = Start + GetForwardVector() * MaxGrabDistance;
+
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red);
 
 	// ...
 }
