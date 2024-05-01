@@ -20,7 +20,6 @@ void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
 	
 }
 
@@ -30,10 +29,22 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	UPhysicsHandleComponent* PhysicsHandle = GetPhysicsHandle();
+	if (!PhysicsHandle)
+	{
+		return;
+	}
+	if (PhysicsHandle -> GetGrabbedComponent())
+	{
+		FVector TargetLocation = GetComponentLocation() + GetForwardVector() * HoldDistance;
+		PhysicsHandle -> SetTargetLocationAndRotation(TargetLocation, GetComponentRotation());
+	}	
+
+	
 	/*
 
-	Some Useful World stuff:
-	========================
+	Getting the camera rotation and World time:
+	===========================================
 
 	FRotator CameraRotation = GetComponentRotation();
 	FString CameraRotationCoordinates = CameraRotation.ToCompactString();
@@ -49,11 +60,114 @@ void UGrabber::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
 	*/
 
+	// FVector Start = GetComponentLocation();
+	// FVector End = Start + GetForwardVector() * MaxGrabDistance;
+
+	/*
+	Debugging a Red line from direction of camera:
+	===============================================
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red);
+	float& DamageRef = Damage;
+	DamageRef = 5;
+
+	UE_LOG(LogTemp, Display, TEXT("Original damage is: %f || DamageRef is: %f"), Damage, DamageRef);
+	*/
+}
+
+void UGrabber::Grab()
+{
+	// Use Grab only if the Owner has PhysicsHandleComponent:
+	// ======================================================
+	UPhysicsHandleComponent * PhysicsHandle = GetPhysicsHandle();
+	if(!PhysicsHandle)
+	{
+		return;
+	}
+
+	FHitResult HitResult;
+	bool IsHit = GetGrabbableInReach(HitResult);
+	if (IsHit)
+	{
+		// Grabbing using PhysicsHandle when ChannelSweep makess a hit:
+		// ============================================================
+		UPrimitiveComponent* HitComponent = HitResult.GetComponent();
+		HitComponent -> WakeAllRigidBodies(); // The physics engine needs wake up when interacted with
+		PhysicsHandle -> GrabComponentAtLocationWithRotation(
+			HitComponent,
+			NAME_None, // For static mesh, when skeleton mesh do something else
+			HitResult.ImpactPoint,
+			GetComponentRotation()// This is the rotation of the grabbed object
+		);
+
+		// -------------------------------------------------------------------------------------
+		// Displaying the Actor who was hit by the ChannelSweep:
+		// =====================================================
+		// AActor* ActorHit = HitResult.GetActor();
+		// UE_LOG(LogTemp, Display, TEXT("Hitting: %s"), *(ActorHit->GetName()));
+		// -------------------------------------------------------------------------------------
+		// Drawing Debug Sphere:
+		// =====================
+		// DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, 10, 10, FColor::Green, false, 5);
+		// DrawDebugSphere(GetWorld(), HitResult.Location, 10, 10, FColor::Blue, false, 5);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Not Hitting Anything with Grabber component"));
+		// DrawDebugSphere(GetWorld(), End, 10, 10, FColor::Red, false, 5);
+	}
+}
+
+void UGrabber::ReleaseComponent()
+{
+	UPhysicsHandleComponent * PhysicsHandle = GetPhysicsHandle();
+	if(!PhysicsHandle)
+	{
+		return;
+	}
+
+	UPrimitiveComponent* GrabbedComponent = PhysicsHandle -> GetGrabbedComponent();
+	if(!GrabbedComponent)
+	{
+		UE_LOG(LogTemp, Display, TEXT("No Grabbed Component"));
+		return;
+	}
+
+	PhysicsHandle -> GetGrabbedComponent() -> WakeAllRigidBodies();
+	PhysicsHandle -> ReleaseComponent();
+	UE_LOG(LogTemp, Display, TEXT("%s Has been released."), *(GrabbedComponent -> GetName()));
+}
+
+bool UGrabber::GetGrabbableInReach(FHitResult& OutHitResult) const
+{
 	FVector Start = GetComponentLocation();
 	FVector End = Start + GetForwardVector() * MaxGrabDistance;
-
-	DrawDebugLine(GetWorld(), Start, End, FColor::Red);
-
-	// ...
+	
+	// Creating a Spherical Sweep -> TraceChannel is in 'DefaultEngine.ini', Search for 'Grabber'
+	// ==========================================================================================
+	FCollisionShape Sphere = FCollisionShape::MakeSphere(GrabRadius);
+	return GetWorld() -> SweepSingleByChannel(
+				OutHitResult,
+				Start,
+				End,
+				FQuat::Identity,
+				ECC_GameTraceChannel2,
+				Sphere
+				);
 }
+
+UPhysicsHandleComponent* UGrabber::GetPhysicsHandle() const
+{
+	// Use Grab only if the Owner has PhysicsHandleComponent:
+	// ======================================================
+	UPhysicsHandleComponent * PhysicsHandle =
+	GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
+	if(!PhysicsHandle)
+	{
+		UE_LOG(LogTemp, Display, TEXT("The Grabbing component has no PhysicsHandleComponent!"));
+	}
+
+	return PhysicsHandle;
+}
+
+
 
