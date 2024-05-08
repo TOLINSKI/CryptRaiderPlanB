@@ -1,8 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+#include "Grabber.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
-#include "Grabber.h"
+
 
 // Sets default values for this component's properties
 UGrabber::UGrabber()
@@ -78,7 +79,7 @@ void UGrabber::Grab()
 {
 	// Use Grab only if the Owner has PhysicsHandleComponent:
 	// ======================================================
-	UPhysicsHandleComponent * PhysicsHandle = GetPhysicsHandle();
+	UPhysicsHandleComponent* PhysicsHandle = GetPhysicsHandle();
 	if(!PhysicsHandle)
 	{
 		return;
@@ -92,6 +93,9 @@ void UGrabber::Grab()
 		// ============================================================
 		UPrimitiveComponent* HitComponent = HitResult.GetComponent();
 		HitComponent -> WakeAllRigidBodies(); // The physics engine needs wake up when interacted with
+		AActor* HitActor = HitResult.GetActor();
+		HitActor -> Tags.Remove("Released");
+		HitActor -> Tags.Add("Grabbed");
 		PhysicsHandle -> GrabComponentAtLocationWithRotation(
 			HitComponent,
 			NAME_None, // For static mesh, when skeleton mesh do something else
@@ -128,11 +132,13 @@ void UGrabber::ReleaseComponent()
 	UPrimitiveComponent* GrabbedComponent = PhysicsHandle -> GetGrabbedComponent();
 	if(!GrabbedComponent)
 	{
-		UE_LOG(LogTemp, Display, TEXT("No Grabbed Component"));
 		return;
 	}
 
-	PhysicsHandle -> GetGrabbedComponent() -> WakeAllRigidBodies();
+	AActor* GrabbedActor = GrabbedComponent -> GetOwner();
+	GrabbedActor -> Tags.Remove("Grabbed");
+	GrabbedActor -> Tags.Add("Released");
+	GrabbedComponent -> WakeAllRigidBodies();
 	PhysicsHandle -> ReleaseComponent();
 	UE_LOG(LogTemp, Display, TEXT("%s Has been released."), *(GrabbedComponent -> GetName()));
 }
@@ -168,6 +174,3 @@ UPhysicsHandleComponent* UGrabber::GetPhysicsHandle() const
 
 	return PhysicsHandle;
 }
-
-
-

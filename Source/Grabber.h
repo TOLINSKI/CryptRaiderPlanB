@@ -42,7 +42,9 @@ private:
 	UPROPERTY(EditAnywhere)
 	float HoldDistance = 200;
 
+	// Functions:
+	// ==========
 	UPhysicsHandleComponent* GetPhysicsHandle() const; // Function cannot cannot change the values of the object
-	// Yaani, Cannot change the attributes above (Damage, GrabRadius, HoldDistance etc...)
+	// i.e. Cannot change the attributes above (Damage, GrabRadius, HoldDistance etc...)
 	bool GetGrabbableInReach(FHitResult& OutHitResult) const;
 };

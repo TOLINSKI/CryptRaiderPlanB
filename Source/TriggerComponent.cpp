@@ -3,6 +3,8 @@
 
 #include "TriggerComponent.h"
 
+// 			Constructor:
+// =================================
 // Sets default values for this component's properties
 UTriggerComponent::UTriggerComponent()
 {
@@ -18,8 +20,6 @@ UTriggerComponent::UTriggerComponent()
 void UTriggerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-    UE_LOG(LogTemp, Display, TEXT("TriggerComponent Initiated"));
 	
 }
 
@@ -29,6 +29,43 @@ void UTriggerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	AActor* ActorUnlockDoor1 = GetUnlockDoorActor(); // Returns nullptr when the unlocking actor is absent
+	if (ActorUnlockDoor1)
+	{
+		UPrimitiveComponent* PrimComp = Cast<UPrimitiveComponent>(ActorUnlockDoor1 -> GetRootComponent());
+		if (PrimComp)
+		{
+			PrimComp -> AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
+			PrimComp -> SetSimulatePhysics(false);
+		}
+		Mover -> SetShouldMove(true);
+	}
+	else
+	{
+		Mover -> SetShouldMove(false);
+	}
+}
 
+// 				My Functions:
+// =================================================
+AActor* UTriggerComponent::GetUnlockDoorActor() const
+{
+	TArray<AActor*> Actors;
+	GetOverlappingActors(Actors);
+	//  for (auto& Actor : Actors) Can also auto enumerate
+	for (AActor* Actor : Actors)
+	{
+		bool HasUnlockTag = Actor -> ActorHasTag(UnlockDoor1Tag);
+		bool IsNotGrabbed = !(Actor -> ActorHasTag("Grabbed")); 
+		if (HasUnlockTag && IsNotGrabbed)
+		{
+			return Actor;
+		}
+	}
+	return nullptr;
+}
 
+void UTriggerComponent::SetMover(UMover* NewMover)
+{
+	Mover = NewMover;
 }
