@@ -41,17 +41,38 @@ void UMover::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponent
 
 	UE_LOG(LogTemp, Display, TEXT("My address is: %s"), *location_str);
 	*/
-
+	/* 	// My Nonsense: (That works hehe)
+		//=================================
 	if (ShouldMove)
+	{
+		FVector CurrentLocation = GetOwner()->GetActorLocation();
+		FVector TargetLocation = (OriginalLocation + MoveOffSet);
+		float Speed = FVector::Distance(OriginalLocation, TargetLocation) / MoveTime;
+		FVector NewLocation = FMath::VInterpConstantTo(CurrentLocation, TargetLocation, DeltaTime, Speed);
+		GetOwner() -> SetActorLocation(NewLocation);
+	}
+	else 
 	{
 		FVector CurrentLocation = GetOwner()->GetActorLocation();
 		FVector TargetLocation = OriginalLocation + MoveOffSet;
 		float Speed = FVector::Distance(OriginalLocation, TargetLocation) / MoveTime;
-		FVector NewLocation = FMath::VInterpConstantTo(CurrentLocation, TargetLocation, DeltaTime, Speed);
+		if (FVector::Distance(OriginalLocation, CurrentLocation) > 0.01 )
+		{
+			TargetLocation = OriginalLocation;
+			FVector NewLocation = FMath::VInterpConstantTo(CurrentLocation, TargetLocation, DeltaTime, Speed);
+			GetOwner() -> SetActorLocation(NewLocation);
+		}
+	*/
 
-		GetOwner() -> SetActorLocation(NewLocation);
+	FVector CurrentLocation = GetOwner()->GetActorLocation();
+	FVector TargetLocation = OriginalLocation;
+	float Speed = MoveOffSet.Length() / MoveTime;
+	if (ShouldMove)
+	{
+		TargetLocation = OriginalLocation + MoveOffSet;
 	}
-
+	FVector NewLocation = FMath::VInterpConstantTo(CurrentLocation, TargetLocation, DeltaTime, Speed);
+	GetOwner() -> SetActorLocation(NewLocation);
 
 	// ...
 }

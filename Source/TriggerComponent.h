@@ -33,13 +33,15 @@ private:
 	UPROPERTY(EditAnywhere)
 	int ActorsInTriggerBox = 0;
 
-	UPROPERTY(VisibleAnywhere)
-	FName UnlockDoor1Tag = FName(TEXT("UnlockDoor1"));
+	UPROPERTY(EditAnywhere)
+	FName UnlockDoorTag = FName(TEXT("UnlockDoor"));
 
-	UPROPERTY(VisibleAnywhere)
-	FName ReleasedTag = FName(TEXT("Released"));
+	UPROPERTY(EditAnywhere)
+	FName LockDoorTag = FName(TEXT("LockDoor"));
 
 	AActor *GetUnlockDoorActor() const;
 
 	UMover *Mover;
+
+	// bool LockDoor() const;
 };

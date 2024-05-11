@@ -39,5 +39,8 @@ public:
 
 	// Functions:
 	void SetShouldMove(bool ShouldMove);
-		
+
+private:
+
+
 };

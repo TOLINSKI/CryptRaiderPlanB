@@ -30,7 +30,7 @@ public:
 	void Grab();
 
 	UFUNCTION(BlueprintCallable)
-	void ReleaseComponent();
+	void Release();
 
 private:
 	UPROPERTY(EditAnywhere)
@@ -41,6 +41,8 @@ private:
 	float GrabRadius = 100;
 	UPROPERTY(EditAnywhere)
 	float HoldDistance = 200;
+
+	bool Grabbing = false;
 
 	// Functions:
 	// ==========

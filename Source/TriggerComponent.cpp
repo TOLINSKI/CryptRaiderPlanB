@@ -29,10 +29,10 @@ void UTriggerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	AActor* ActorUnlockDoor1 = GetUnlockDoorActor(); // Returns nullptr when the unlocking actor is absent
-	if (ActorUnlockDoor1)
+	AActor* ActorUnlock = GetUnlockDoorActor(); // Returns nullptr when the unlocking actor is absent
+	if (ActorUnlock)
 	{
-		UPrimitiveComponent* PrimComp = Cast<UPrimitiveComponent>(ActorUnlockDoor1 -> GetRootComponent());
+		UPrimitiveComponent* PrimComp = Cast<UPrimitiveComponent>(ActorUnlock -> GetRootComponent());
 		if (PrimComp)
 		{
 			PrimComp -> AttachToComponent(this, FAttachmentTransformRules::KeepWorldTransform);
@@ -43,6 +43,10 @@ void UTriggerComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	else
 	{
 		Mover -> SetShouldMove(false);
+		// if (LockDoorTag == "LockDoor2")
+		// {
+		// 	Mover -> SetShouldMove(true);
+		// }
 	}
 }
 
@@ -55,15 +59,20 @@ AActor* UTriggerComponent::GetUnlockDoorActor() const
 	//  for (auto& Actor : Actors) Can also auto enumerate
 	for (AActor* Actor : Actors)
 	{
-		bool HasUnlockTag = Actor -> ActorHasTag(UnlockDoor1Tag);
-		bool IsNotGrabbed = !(Actor -> ActorHasTag("Grabbed")); 
-		if (HasUnlockTag && IsNotGrabbed)
+		bool HasUnlockTag = Actor -> ActorHasTag(UnlockDoorTag);
+		bool IsGrabbed = Actor -> ActorHasTag("Grabbed"); 
+		if (HasUnlockTag && !IsGrabbed)
 		{
 			return Actor;
 		}
 	}
 	return nullptr;
 }
+
+// bool UTriggerComponent::LockDoor() const
+// {
+
+// }
 
 void UTriggerComponent::SetMover(UMover* NewMover)
 {
